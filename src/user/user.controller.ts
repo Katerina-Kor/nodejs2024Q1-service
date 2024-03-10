@@ -16,7 +16,7 @@ import {
 import { CreateUserDto } from './dto/createUser.dto';
 import { UpdatePasswordDto } from './dto/updatePassword.dto';
 import { UserService } from './user.service';
-import { ChangeUserError, IResponseUser, IUser } from 'src/types';
+import { ChangeUserError, IResponseUser } from 'src/types';
 
 @Controller('user')
 export class UserController {

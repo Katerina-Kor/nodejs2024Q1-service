@@ -62,6 +62,14 @@ export class TrackService {
 
     this.databaseService.tracks.splice(trackIndex, 1);
 
+    // check favorites
+    const trackIndexInFavs = this.databaseService.favorites.tracks.findIndex(
+      (currTrackId) => currTrackId === trackId,
+    );
+    if (trackIndexInFavs > -1) {
+      this.databaseService.favorites.tracks.splice(trackIndexInFavs, 1);
+    }
+
     return {
       data: null,
       error: null,

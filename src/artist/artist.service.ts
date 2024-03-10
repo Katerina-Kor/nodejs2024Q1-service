@@ -62,6 +62,28 @@ export class ArtistService {
 
     this.databaseService.artists.splice(artistIndex, 1);
 
+    // check favorites
+    const artistIndexInFavs = this.databaseService.favorites.artists.findIndex(
+      (currArtistId) => currArtistId === artistId,
+    );
+    if (artistIndexInFavs > -1) {
+      this.databaseService.favorites.artists.splice(artistIndexInFavs, 1);
+    }
+
+    // chack tracks
+    this.databaseService.tracks.forEach((track) => {
+      if (track.artistId === artistId) {
+        track.artistId = null;
+      }
+    });
+
+    // chack albums
+    this.databaseService.albums.forEach((album) => {
+      if (album.artistId === artistId) {
+        album.artistId = null;
+      }
+    });
+
     return {
       data: null,
       error: null,

@@ -29,7 +29,10 @@ export class FavsService {
       (currTrack) => currTrack.id === trackId,
     );
     if (!track) return false;
-    this.databaseService.favorites.tracks.push(trackId);
+    const isHave = this.databaseService.favorites.tracks.includes(trackId);
+    if (!isHave) {
+      this.databaseService.favorites.tracks.push(trackId);
+    }
     return true;
   }
 
@@ -47,7 +50,10 @@ export class FavsService {
       (currAlbum) => currAlbum.id === albumId,
     );
     if (!album) return false;
-    this.databaseService.favorites.albums.push(albumId);
+    const isHave = this.databaseService.favorites.albums.includes(albumId);
+    if (!isHave) {
+      this.databaseService.favorites.albums.push(albumId);
+    }
     return true;
   }
 
@@ -65,7 +71,10 @@ export class FavsService {
       (currArtist) => currArtist.id === artistId,
     );
     if (!artist) return false;
-    this.databaseService.favorites.artists.push(artistId);
+    const isHave = this.databaseService.favorites.artists.includes(artistId);
+    if (!isHave) {
+      this.databaseService.favorites.artists.push(artistId);
+    }
     return true;
   }
 
@@ -74,7 +83,7 @@ export class FavsService {
       (currArtistId) => currArtistId === artistId,
     );
     if (artistIndex === -1) return false;
-    this.databaseService.favorites.albums.splice(artistIndex, 1);
+    this.databaseService.favorites.artists.splice(artistIndex, 1);
     return true;
   }
 }

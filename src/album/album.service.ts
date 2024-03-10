@@ -59,7 +59,22 @@ export class AlbumService {
       };
     }
 
-    this.databaseService.tracks.splice(albumIndex, 1);
+    this.databaseService.albums.splice(albumIndex, 1);
+
+    // check favorites
+    const albumIndexInFavs = this.databaseService.favorites.albums.findIndex(
+      (currAlbumId) => currAlbumId === albumId,
+    );
+    if (albumIndexInFavs > -1) {
+      this.databaseService.favorites.albums.splice(albumIndexInFavs, 1);
+    }
+
+    // chack tracks
+    this.databaseService.tracks.forEach((track) => {
+      if (track.albumId === albumId) {
+        track.albumId = null;
+      }
+    });
 
     return {
       data: null,

@@ -56,7 +56,7 @@ export class ArtistController {
 
   @HttpCode(204)
   @Delete(':id')
-  deleteUser(@Param('id', ParseUUIDPipe) id: string): void {
+  deleteArtist(@Param('id', ParseUUIDPipe) id: string): void {
     const deleteResult = this.artistService.deleteArtist(id);
     if (deleteResult.error === ChangeArtistError.NOT_FOUND) {
       throw new NotFoundException('Artist with this id is not found');

@@ -4,6 +4,7 @@ import {
   ChangeUserError,
   IChangeUserResult,
   ICreateUserDto,
+  IResponseUser,
   IUpdatePasswordDto,
   IUser,
 } from 'src/types';
@@ -13,15 +14,23 @@ import { v4 as uuidv4 } from 'uuid';
 export class UserService {
   constructor(private databaseService: DatabaseService) {}
 
-  getUsers(): IUser[] {
-    return this.databaseService.users;
+  getUsers(): IResponseUser[] {
+    return this.databaseService.users.map((user) => {
+      const resUser = { ...user };
+      delete resUser.password;
+      return resUser;
+    });
   }
 
-  getUser(userId: string): IUser | undefined {
-    return this.databaseService.users.find((user) => user.id === userId);
+  getUser(userId: string): IResponseUser | undefined {
+    const user = this.databaseService.users.find((user) => user.id === userId);
+    if (!user) return undefined;
+    const resUser = { ...user };
+    delete resUser.password;
+    return resUser;
   }
 
-  createUser(user: ICreateUserDto): IUser {
+  createUser(user: ICreateUserDto): IResponseUser {
     const timestamp = Date.now();
     const newUser: IUser = {
       ...user,
@@ -31,14 +40,16 @@ export class UserService {
       updatedAt: timestamp,
     };
     this.databaseService.users.push(newUser);
-    return newUser;
+    const resUser = { ...newUser };
+    delete resUser.password;
+    return resUser;
   }
 
   changeUserPassword(
     userId: string,
     data: IUpdatePasswordDto,
   ): IChangeUserResult {
-    const user = this.getUser(userId);
+    const user = this.databaseService.users.find((user) => user.id === userId);
     if (!user) {
       return {
         data: null,
@@ -54,13 +65,17 @@ export class UserService {
     }
 
     user.password = data.newPassword;
+    user.version += 1;
+    user.updatedAt = Date.now();
+    const resUser = { ...user };
+    delete resUser.password;
     return {
-      data: user,
+      data: resUser,
       error: null,
     };
   }
 
-  deleteUser(userId: string) {
+  deleteUser(userId: string): IChangeUserResult {
     const userIndex = this.databaseService.users.findIndex(
       (user) => user.id === userId,
     );

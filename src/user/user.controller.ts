@@ -16,19 +16,19 @@ import {
 import { CreateUserDto } from './dto/createUser.dto';
 import { UpdatePasswordDto } from './dto/updatePassword.dto';
 import { UserService } from './user.service';
-import { ChangeUserError, IUser } from 'src/types';
+import { ChangeUserError, IResponseUser, IUser } from 'src/types';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  getAllUsers(): IUser[] {
+  getAllUsers(): IResponseUser[] {
     return this.userService.getUsers();
   }
 
   @Get(':id')
-  getUser(@Param('id', ParseUUIDPipe) id: string): IUser {
+  getUser(@Param('id', ParseUUIDPipe) id: string): IResponseUser {
     const user = this.userService.getUser(id);
     if (!user) {
       throw new NotFoundException('User with this id is not found');
@@ -38,7 +38,7 @@ export class UserController {
 
   @UsePipes(new ValidationPipe())
   @Post()
-  createUser(@Body() dto: CreateUserDto): IUser {
+  createUser(@Body() dto: CreateUserDto): IResponseUser {
     return this.userService.createUser(dto);
   }
 
@@ -47,7 +47,7 @@ export class UserController {
   changeUser(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdatePasswordDto,
-  ): IUser {
+  ): IResponseUser {
     const changeResult = this.userService.changeUserPassword(id, dto);
     if (changeResult.error === ChangeUserError.NOT_FOUND) {
       throw new NotFoundException('User with this id is not found');

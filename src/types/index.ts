@@ -10,6 +10,8 @@ export interface IUser extends ICreateUserDto {
   updatedAt: number; // timestamp of last update
 }
 
+export type IResponseUser = Omit<IUser, 'password'>;
+
 export interface IUpdatePasswordDto {
   oldPassword: string; // previous password
   newPassword: string; // new password
@@ -21,6 +23,6 @@ export enum ChangeUserError {
 }
 
 export interface IChangeUserResult {
-  data: IUser | null;
+  data: IResponseUser | null;
   error: ChangeUserError | null;
 }

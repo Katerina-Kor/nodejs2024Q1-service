@@ -11,9 +11,13 @@ export class TrackService {
   }
 
   async getTrack(trackId: string) {
-    return await this.prisma.track.findUnique({
+    const track = this.prisma.track.findUnique({
       where: { id: trackId },
     });
+    if (!track) {
+      throw new NotFoundException('Track with this id is not found');
+    }
+    return track;
   }
 
   async createTrack(createTrackDto: ICreateTrackDto) {

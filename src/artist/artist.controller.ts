@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   HttpCode,
-  NotFoundException,
   Param,
   ParseUUIDPipe,
   Post,
@@ -13,7 +12,6 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ArtistService } from './artist.service';
-import { ChangeArtistError, IArtist } from 'src/types';
 import { CreateArtistDto } from './dto/createArtist.dto';
 import { UpdateArtistDto } from './dto/updateArtist.dto';
 
@@ -22,44 +20,33 @@ export class ArtistController {
   constructor(private readonly artistService: ArtistService) {}
 
   @Get()
-  getAllArtists(): IArtist[] {
-    return this.artistService.getArtists();
+  async getAllArtists() {
+    return await this.artistService.getArtists();
   }
 
   @Get(':id')
-  getArtist(@Param('id', ParseUUIDPipe) id: string): IArtist {
-    const artist = this.artistService.getArtist(id);
-    if (!artist) {
-      throw new NotFoundException('Artist with this id is not found');
-    }
-    return artist;
+  async getArtist(@Param('id', ParseUUIDPipe) id: string) {
+    return await this.artistService.getArtist(id);
   }
 
   @UsePipes(new ValidationPipe())
   @Post()
-  createArtist(@Body() dto: CreateArtistDto): IArtist {
-    return this.artistService.createArtist(dto);
+  async createArtist(@Body() dto: CreateArtistDto) {
+    return await this.artistService.createArtist(dto);
   }
 
   @UsePipes(new ValidationPipe())
   @Put(':id')
-  changeArtist(
+  async changeArtist(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateArtistDto,
-  ): IArtist {
-    const changeResult = this.artistService.updateArtist(id, dto);
-    if (changeResult.error === ChangeArtistError.NOT_FOUND) {
-      throw new NotFoundException('Artist with this id is not found');
-    }
-    return changeResult.data;
+  ) {
+    return await this.artistService.updateArtist(id, dto);
   }
 
   @HttpCode(204)
   @Delete(':id')
-  deleteArtist(@Param('id', ParseUUIDPipe) id: string): void {
-    const deleteResult = this.artistService.deleteArtist(id);
-    if (deleteResult.error === ChangeArtistError.NOT_FOUND) {
-      throw new NotFoundException('Artist with this id is not found');
-    }
+  async deleteArtist(@Param('id', ParseUUIDPipe) id: string) {
+    await this.artistService.deleteArtist(id);
   }
 }

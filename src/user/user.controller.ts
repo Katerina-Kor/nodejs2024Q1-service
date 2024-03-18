@@ -2,10 +2,8 @@ import {
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
   HttpCode,
-  NotFoundException,
   Param,
   ParseUUIDPipe,
   Post,
@@ -16,54 +14,39 @@ import {
 import { CreateUserDto } from './dto/createUser.dto';
 import { UpdatePasswordDto } from './dto/updatePassword.dto';
 import { UserService } from './user.service';
-import { ChangeUserError, IResponseUser } from 'src/types';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  getAllUsers(): IResponseUser[] {
-    return this.userService.getUsers();
+  async getAllUsers() {
+    return await this.userService.getUsers();
   }
 
   @Get(':id')
-  getUser(@Param('id', ParseUUIDPipe) id: string): IResponseUser {
-    const user = this.userService.getUser(id);
-    if (!user) {
-      throw new NotFoundException('User with this id is not found');
-    }
-    return user;
+  async getUser(@Param('id', ParseUUIDPipe) id: string) {
+    return await this.userService.getUser(id);
   }
 
   @UsePipes(new ValidationPipe())
   @Post()
-  createUser(@Body() dto: CreateUserDto): IResponseUser {
-    return this.userService.createUser(dto);
+  async createUser(@Body() dto: CreateUserDto) {
+    return await this.userService.createUser(dto);
   }
 
   @UsePipes(new ValidationPipe())
   @Put(':id')
-  changeUser(
+  async changeUser(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdatePasswordDto,
-  ): IResponseUser {
-    const changeResult = this.userService.changeUserPassword(id, dto);
-    if (changeResult.error === ChangeUserError.NOT_FOUND) {
-      throw new NotFoundException('User with this id is not found');
-    }
-    if (changeResult.error === ChangeUserError.WRONG_PASSWORD) {
-      throw new ForbiddenException('Wrong password');
-    }
-    return changeResult.data;
+  ) {
+    return await this.userService.changeUserPassword(id, dto);
   }
 
   @HttpCode(204)
   @Delete(':id')
-  deleteUser(@Param('id', ParseUUIDPipe) id: string): void {
-    const deleteResult = this.userService.deleteUser(id);
-    if (deleteResult.error === ChangeUserError.NOT_FOUND) {
-      throw new NotFoundException('User with this id is not found');
-    }
+  async deleteUser(@Param('id', ParseUUIDPipe) id: string) {
+    await this.userService.deleteUser(id);
   }
 }

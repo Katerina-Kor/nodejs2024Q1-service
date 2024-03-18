@@ -1,96 +1,68 @@
-import { Injectable } from '@nestjs/common';
-import { DatabaseService } from 'src/database/database.service';
 import {
-  ChangeUserError,
-  IChangeUserResult,
-  ICreateUserDto,
-  IResponseUser,
-  IUpdatePasswordDto,
-  IUser,
-} from 'src/types';
-import { v4 as uuidv4 } from 'uuid';
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { ICreateUserDto, IUpdatePasswordDto } from 'src/types';
+import { excludePassword } from './helpers/helpers';
 
 @Injectable()
 export class UserService {
-  constructor(private databaseService: DatabaseService) {}
+  constructor(private prisma: PrismaService) {}
 
-  getUsers(): IResponseUser[] {
-    return this.databaseService.users.map((user) => {
-      const resUser = { ...user };
-      delete resUser.password;
-      return resUser;
+  async getUsers() {
+    const users = await this.prisma.user.findMany();
+    return users.map((user) => excludePassword(user));
+  }
+
+  async getUser(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
     });
-  }
 
-  getUser(userId: string): IResponseUser | undefined {
-    const user = this.databaseService.users.find((user) => user.id === userId);
-    if (!user) return undefined;
-    const resUser = { ...user };
-    delete resUser.password;
-    return resUser;
-  }
-
-  createUser(user: ICreateUserDto): IResponseUser {
-    const timestamp = Date.now();
-    const newUser: IUser = {
-      ...user,
-      version: 1,
-      id: uuidv4(),
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    };
-    this.databaseService.users.push(newUser);
-    const resUser = { ...newUser };
-    delete resUser.password;
-    return resUser;
-  }
-
-  changeUserPassword(
-    userId: string,
-    data: IUpdatePasswordDto,
-  ): IChangeUserResult {
-    const user = this.databaseService.users.find((user) => user.id === userId);
     if (!user) {
-      return {
-        data: null,
-        error: ChangeUserError.NOT_FOUND,
-      };
+      throw new NotFoundException('User with this id is not found');
     }
-
-    if (user.password !== data.oldPassword) {
-      return {
-        data: null,
-        error: ChangeUserError.WRONG_PASSWORD,
-      };
-    }
-
-    user.password = data.newPassword;
-    user.version += 1;
-    user.updatedAt = Date.now();
-    const resUser = { ...user };
-    delete resUser.password;
-    return {
-      data: resUser,
-      error: null,
-    };
+    return excludePassword(user);
   }
 
-  deleteUser(userId: string): IChangeUserResult {
-    const userIndex = this.databaseService.users.findIndex(
-      (user) => user.id === userId,
-    );
-    if (userIndex === -1) {
-      return {
-        data: null,
-        error: ChangeUserError.NOT_FOUND,
-      };
+  async createUser(createUserDto: ICreateUserDto) {
+    const user = await this.prisma.user.create({
+      data: createUserDto,
+    });
+    return excludePassword(user);
+  }
+
+  async changeUserPassword(userId: string, data: IUpdatePasswordDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException('User with this id is not found');
     }
+    if (user.password !== data.oldPassword) {
+      throw new ForbiddenException('Wrong password');
+    }
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: data.newPassword,
+        version: user.version + 1,
+      },
+    });
+    return excludePassword(updatedUser);
+  }
 
-    this.databaseService.users.splice(userIndex, 1);
-
-    return {
-      data: null,
-      error: null,
-    };
+  async deleteUser(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException('User with this id is not found');
+    }
+    await this.prisma.user.delete({
+      where: { id: userId },
+    });
   }
 }

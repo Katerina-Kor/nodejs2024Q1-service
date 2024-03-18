@@ -11,10 +11,13 @@ export class TrackService {
   }
 
   async getTrack(trackId: string) {
-    const track = this.prisma.track.findUnique({
+    console.log('GET TRACK ID', trackId);
+    const track = await this.prisma.track.findUnique({
       where: { id: trackId },
     });
+    console.log('GET TRACK', track);
     if (!track) {
+      console.log('PING');
       throw new NotFoundException('Track with this id is not found');
     }
     return track;

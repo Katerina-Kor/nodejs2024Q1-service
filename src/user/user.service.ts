@@ -5,33 +5,37 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ICreateUserDto, IUpdatePasswordDto } from 'src/types';
-import { excludePassword } from './helpers/helpers';
+import { convertTime, userSelect } from './helpers/helpers';
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
   async getUsers() {
-    const users = await this.prisma.user.findMany();
-    return users.map((user) => excludePassword(user));
+    const users = await this.prisma.user.findMany({
+      select: userSelect,
+    });
+    return users.map((user) => convertTime(user));
   }
 
   async getUser(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
+      select: userSelect,
     });
 
     if (!user) {
       throw new NotFoundException('User with this id is not found');
     }
-    return excludePassword(user);
+    return convertTime(user);
   }
 
   async createUser(createUserDto: ICreateUserDto) {
     const user = await this.prisma.user.create({
       data: createUserDto,
+      select: userSelect,
     });
-    return excludePassword(user);
+    return convertTime(user);
   }
 
   async changeUserPassword(userId: string, data: IUpdatePasswordDto) {
@@ -50,8 +54,9 @@ export class UserService {
         password: data.newPassword,
         version: user.version + 1,
       },
+      select: userSelect,
     });
-    return excludePassword(updatedUser);
+    return convertTime(updatedUser);
   }
 
   async deleteUser(userId: string) {

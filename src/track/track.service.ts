@@ -1,23 +1,24 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ICreateTrackDto } from 'src/types';
+import { trackSelect } from './helpers/helpers';
 
 @Injectable()
 export class TrackService {
   constructor(private prisma: PrismaService) {}
 
   async getTracks() {
-    return await this.prisma.track.findMany();
+    return await this.prisma.track.findMany({
+      select: trackSelect,
+    });
   }
 
   async getTrack(trackId: string) {
-    console.log('GET TRACK ID', trackId);
     const track = await this.prisma.track.findUnique({
       where: { id: trackId },
+      select: trackSelect,
     });
-    console.log('GET TRACK', track);
     if (!track) {
-      console.log('PING');
       throw new NotFoundException('Track with this id is not found');
     }
     return track;
@@ -26,6 +27,7 @@ export class TrackService {
   async createTrack(createTrackDto: ICreateTrackDto) {
     return await this.prisma.track.create({
       data: createTrackDto,
+      select: trackSelect,
     });
   }
 
@@ -40,6 +42,7 @@ export class TrackService {
     return await this.prisma.track.update({
       where: { id: trackId },
       data,
+      select: trackSelect,
     });
   }
 

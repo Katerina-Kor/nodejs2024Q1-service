@@ -1,18 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ICreateArtistDto } from 'src/types';
+import { artistSelect } from './helpers/helpers';
 
 @Injectable()
 export class ArtistService {
   constructor(private prisma: PrismaService) {}
 
   async getArtists() {
-    return await this.prisma.artist.findMany();
+    return await this.prisma.artist.findMany({
+      select: artistSelect,
+    });
   }
 
   async getArtist(artistId: string) {
     const artist = await this.prisma.artist.findUnique({
       where: { id: artistId },
+      select: artistSelect,
     });
     if (!artist) {
       throw new NotFoundException('Artist with this id is not found');
@@ -23,6 +27,7 @@ export class ArtistService {
   async createArtist(createArtistDto: ICreateArtistDto) {
     return await this.prisma.artist.create({
       data: createArtistDto,
+      select: artistSelect,
     });
   }
 
@@ -36,6 +41,7 @@ export class ArtistService {
     return await this.prisma.artist.update({
       where: { id: artistId },
       data,
+      select: artistSelect,
     });
   }
 

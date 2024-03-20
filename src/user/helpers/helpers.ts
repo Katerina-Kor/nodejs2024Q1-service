@@ -1,7 +1,17 @@
 import { User } from '@prisma/client';
 
-export function excludePassword(user: User): Omit<User, 'password'> {
-  const resUser = { ...user };
-  delete resUser.password;
-  return resUser;
-}
+export const userSelect = {
+  id: true,
+  login: true,
+  version: true,
+  createdAt: true,
+  updatedAt: true,
+};
+
+export const convertTime = (user: Omit<User, 'password'>) => {
+  return {
+    ...user,
+    createdAt: new Date(user.createdAt).getTime(),
+    updatedAt: new Date(user.updatedAt).getTime(),
+  };
+};

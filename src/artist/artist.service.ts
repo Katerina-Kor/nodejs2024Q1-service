@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ICreateArtistDto } from 'src/types';
+import { ICreateArtistDto } from './helpers/types';
 import { artistSelect } from './helpers/helpers';
 
 @Injectable()

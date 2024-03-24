@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ICreateUserDto, IUpdatePasswordDto } from 'src/types';
+import { ICreateUserDto, IUpdatePasswordDto } from './helpers/types';
 import { convertTime, userSelect } from './helpers/helpers';
 
 @Injectable()

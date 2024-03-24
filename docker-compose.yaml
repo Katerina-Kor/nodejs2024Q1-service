@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   api:
-    container_name: api-container
+    container_name: app
     restart: always
     build:
       context: .
@@ -10,13 +10,36 @@ services:
       - 4000:4000
     depends_on:
       - postgres
+    volumes:
+      - ./src:/app/src
+    networks:
+      - appnet
+      - internet
+      
   postgres:
-    container_name: postgres-container
-    image: postgres:16.2-alpine
+    container_name: app-db
     restart: always
+    build:
+      context: ./database
+      dockerfile: Dockerfile
     environment:
       - POSTGRES_USER=myuser
       - POSTGRES_PASSWORD=mypassword
       - POSTGRES_DB=db
     ports:
       - '5432:5432'
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    networks:
+      - appnet
+
+volumes:
+  postgres:
+
+networks:
+  appnet:
+    name: appnet
+    driver: bridge
+  internet:
+    name: internet
+    driver: bridge

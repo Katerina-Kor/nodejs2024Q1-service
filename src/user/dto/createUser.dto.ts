@@ -1,5 +1,5 @@
 import { IsString } from 'class-validator';
-import { ICreateUserDto } from 'src/types';
+import { ICreateUserDto } from '../helpers/types';
 
 export class CreateUserDto implements ICreateUserDto {
   @IsString()

@@ -1,1 +1,10 @@
 node_modules
+Dockerfile
+docker-compose.yaml
+database
+dist
+.gitignore
+.git
+test
+.env.example
+README.md

@@ -1,7 +1,11 @@
 FROM node:20.11-alpine
+
 WORKDIR /app
+
 COPY package*.json ./
-RUN npm install
+
+RUN npm install && npm cache clean --force
+
 COPY . .
-# RUN npm run build
-CMD npx prisma migrate dev && npm run start:dev
+
+CMD npx prisma generate && npx prisma migrate deploy && npm run start:dev

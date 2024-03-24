@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ICreateTrackDto } from 'src/types';
+import { ICreateTrackDto } from './helpers/types';
 import { trackSelect } from './helpers/helpers';
 
 @Injectable()

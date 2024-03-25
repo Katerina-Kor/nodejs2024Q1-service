@@ -1,33 +1,88 @@
-# Home Library Service
+# Home Library Service. Docker & Database
+Multi-container application, that uses PostgreSQL database, Prisma and Nest.js   
+PostgreSQL runs inside the Docker container.  
+Docker Api image - [katerinakor/nodejs2024q1-service-api](https://hub.docker.com/r/katerinakor/nodejs2024q1-service-api)  
+Docker Database image - [katerinakor/nodejs2024q1-service-postgres](https://hub.docker.com/r/katerinakor/nodejs2024q1-service-postgres)
 
 ## Prerequisites
 
 - Git - [Download & Install Git](https://git-scm.com/downloads).
-- Node.js - [Download & Install Node.js](https://nodejs.org/en/download/) and the npm package manager.
+- Docker - [Download & Install Docker](https://www.docker.com/products/docker-desktop/).
 
-## Downloading
+## How to use:
+
+#### 1. Clone repository
 
 ```
 git clone https://github.com/Katerina-Kor/nodejs2024Q1-service.git
 ```
 
-## Installing NPM modules
+#### 2. Switch branch
+
+```
+git checkout db_docker
+```
+
+#### 3. Create `.env` file from `.env.example`
+
+#### 4. Install NPM modules
 
 ```
 npm install
 ```
 
-## Running application
+#### 5. Start application in docker
 
 ```
-npm start
+npm run docker:up
 ```
 
-After starting the app on port (4000 as default, but you can add .env file using .env.example) you can open
+## Other scripts:
+
+### Running application locally
+
+```
+npm run start
+```
+
+After starting the app on port (4000 as default, you can change port in .env file) you can open
 in your browser OpenAPI documentation by typing http://localhost:4000/doc/.
 For more information about OpenAPI/Swagger please visit https://swagger.io/.
 
-## Testing
+### Running application locally in dev mode
+
+```
+npm run start:dev
+```
+
+### Stop application in docker
+
+```
+npm run docker:down
+```
+
+Will stop containers and then remove all stopped containers and unused networks.
+
+### Scan images for vulnerabilities
+
+```
+npm run scan:api
+```
+```
+npm run scan:db
+```
+
+### Auto-fix and format
+
+```
+npm run lint
+```
+
+```
+npm run format
+```
+
+### Testing
 
 After application running open new terminal and enter:
 
@@ -53,16 +108,6 @@ To run only specific test suite with authorization
 
 ```
 npm run test:auth -- <path to suite>
-```
-
-### Auto-fix and format
-
-```
-npm run lint
-```
-
-```
-npm run format
 ```
 
 ### Debugging in VSCode

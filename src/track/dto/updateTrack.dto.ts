@@ -1,5 +1,5 @@
 import { IsInt, IsString, ValidateIf } from 'class-validator';
-import { ICreateTrackDto } from 'src/types';
+import { ICreateTrackDto } from '../helpers/types';
 
 export class UpdateTrackDto implements ICreateTrackDto {
   @IsString()

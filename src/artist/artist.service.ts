@@ -1,92 +1,81 @@
-import { Injectable } from '@nestjs/common';
-import { DatabaseService } from 'src/database/database.service';
-import {
-  ChangeArtistError,
-  IArtist,
-  IChangeArtistResult,
-  ICreateArtistDto,
-} from 'src/types';
-import { v4 as uuidv4 } from 'uuid';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { ICreateArtistDto } from './helpers/types';
+import { artistSelect } from './helpers/helpers';
 
 @Injectable()
 export class ArtistService {
-  constructor(private databaseService: DatabaseService) {}
+  constructor(private prisma: PrismaService) {}
 
-  getArtists(): IArtist[] {
-    return this.databaseService.artists;
+  async getArtists() {
+    return await this.prisma.artist.findMany({
+      select: artistSelect,
+    });
   }
 
-  getArtist(artistId: string): IArtist | undefined {
-    return this.databaseService.artists.find(
-      (artist) => artist.id === artistId,
-    );
-  }
-
-  createArtist(artist: ICreateArtistDto): IArtist {
-    const newArtist: IArtist = {
-      ...artist,
-      id: uuidv4(),
-    };
-    this.databaseService.artists.push(newArtist);
-    return newArtist;
-  }
-
-  updateArtist(artistId: string, data: ICreateArtistDto): IChangeArtistResult {
-    const artist = this.getArtist(artistId);
+  async getArtist(artistId: string) {
+    const artist = await this.prisma.artist.findUnique({
+      where: { id: artistId },
+      select: artistSelect,
+    });
     if (!artist) {
-      return {
-        data: null,
-        error: ChangeArtistError.NOT_FOUND,
-      };
+      throw new NotFoundException('Artist with this id is not found');
     }
-
-    artist.name = data.name;
-    artist.grammy = data.grammy;
-
-    return {
-      data: artist,
-      error: null,
-    };
+    return artist;
   }
 
-  deleteArtist(artistId: string): IChangeArtistResult {
-    const artistIndex = this.databaseService.artists.findIndex(
-      (artist) => artist.id === artistId,
-    );
-    if (artistIndex === -1) {
-      return {
-        data: null,
-        error: ChangeArtistError.NOT_FOUND,
-      };
-    }
+  async createArtist(createArtistDto: ICreateArtistDto) {
+    return await this.prisma.artist.create({
+      data: createArtistDto,
+      select: artistSelect,
+    });
+  }
 
-    this.databaseService.artists.splice(artistIndex, 1);
+  async updateArtist(artistId: string, data: ICreateArtistDto) {
+    const artist = await this.prisma.artist.findUnique({
+      where: { id: artistId },
+    });
+    if (!artist) {
+      throw new NotFoundException('Artist with this id is not found');
+    }
+    return await this.prisma.artist.update({
+      where: { id: artistId },
+      data,
+      select: artistSelect,
+    });
+  }
+
+  async deleteArtist(artistId: string) {
+    const artist = await this.prisma.artist.findUnique({
+      where: { id: artistId },
+    });
+    if (!artist) {
+      throw new NotFoundException('Artist with this id is not found');
+    }
+    await this.prisma.artist.delete({
+      where: { id: artistId },
+    });
 
     // check favorites
-    const artistIndexInFavs = this.databaseService.favorites.artists.findIndex(
-      (currArtistId) => currArtistId === artistId,
-    );
-    if (artistIndexInFavs > -1) {
-      this.databaseService.favorites.artists.splice(artistIndexInFavs, 1);
-    }
+    // const artistIndexInFavs = this.databaseService.favorites.artists.findIndex(
+    //   (currArtistId) => currArtistId === artistId,
+    // );
+    // if (artistIndexInFavs > -1) {
+    //   this.databaseService.favorites.artists.splice(artistIndexInFavs, 1);
+    // }
 
     // chack tracks
-    this.databaseService.tracks.forEach((track) => {
-      if (track.artistId === artistId) {
-        track.artistId = null;
-      }
-    });
+    // this.databaseService.tracks.forEach((track) => {
+    //   if (track.artistId === artistId) {
+    //     track.artistId = null;
+    //   }
+    // });
 
     // chack albums
-    this.databaseService.albums.forEach((album) => {
-      if (album.artistId === artistId) {
-        album.artistId = null;
-      }
-    });
-
-    return {
-      data: null,
-      error: null,
-    };
+    // this.databaseService.albums.forEach((album) => {
+    //   if (album.artistId === artistId) {
+    //     album.artistId = null;
+    //   }
+    // });
   }
 }
